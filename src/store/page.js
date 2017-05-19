@@ -1,10 +1,12 @@
 // import browserHistory from 'react-router/lib/browserHistory'
 import fetch from 'isomorphic-fetch'
 
+// TODO; merge functionality of data and page reducers into utility file
 
 // ------------------------------------
 // Constants
 // ------------------------------------
+export const BASE_URL = 'localhost/api/public'
 
 // Async
 export const FETCH_PAGES = 'FETCH_PAGES'
@@ -143,7 +145,7 @@ export function fetch (url = '') {
 		// This is not required by thunk middleware, but it is convenient for us.
 
 		// TODO; temp url, place this elsewhere
-		var fullUrl = `localhost/api/public` + (url ? '/' + url : '')
+		var fullUrl = BASE_URL + (url ? '/' + url : '')
 		return fetch(fullUrl)
 			.then(response => response.json())
 			.then(json =>
@@ -174,6 +176,7 @@ export function update (url) {
 function page(state = {
 	isFetching: false,
 	hasInvalidated: false,
+	lastUpdated: false,
 	data: {}
 }, action) {
 	switch (action.type) {
@@ -189,7 +192,6 @@ function page(state = {
 			return Object.assign({}, state, {
 				isFetching: false,
 				hasInvalidated: false,
-				// data: action.payload.pages,
 				lastUpdated: action.payload.receivedAt
 			})
 		default:
@@ -238,12 +240,13 @@ function pages(state = {
 			})
 		case RECEIVE_PAGES:
 			return Object.assign({}, state, {
+				// TODO; check for common url to tag hasLoadedCommonPages
 				isUpdating: [ ...new Set(state.isUpdating.concat(action.payload.pageIds)) ],
 				isFetching: state.isFetching.filter(v => v != action.payload.url),
 				// Subtract pageIds from invalidPages array
 				invalidPages: state.invalidPages.filter(v => action.payload.pageIds.indexOf(v) == -1),
 				data: Object.assign({}, state.data, action.payload.pages.map(v => page(v, RECEIVE_PAGE))),
-				lastUpdated: action.payload.receivedAt
+				// lastUpdated: action.payload.receivedAt
 			})
 		default:
 			return state
@@ -289,7 +292,6 @@ function selectedPage(state = '', action) {
 
 
 const rootReducer = combineReducers({
-	fetchPage,
 	fetchPages,
 	selectedPage
 })
