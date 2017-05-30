@@ -204,38 +204,38 @@ function data(state = {
 	loadedAndValidData: [], // Ids
 	invalidData: [], // Ids
 	hasLoadedCommonData: false,
-	data: []
+	dataItems: []
 }, action) {
 	switch (action.type) {
 		case GET_DATA:
-			var data = Object.assign({}, state.data);
+			var dataItems = Object.assign({}, state.dataItems);
 
 			// TODO; This cannot associate dataItem urls with dataItem set urls,
 			// TODO; load url sets from server; eg common dataItem url with related specific dataItem urls
-			for (var key in data) {
+			for (var key in dataItems) {
 				if (key == action.url) {
-					dataItem(data[key], { type: GET_DATA_ITEM })
+					dataItem(dataItems[key], { type: GET_DATA_ITEM })
 				}
 			}
 
 			return Object.assign({}, state, {
 				// Unique push
 				isFetching: [ ...new Set(state.isFetching.push(action.url)) ],
-				data: data
+				dataItems: dataItems
 			})
 		case INVALIDATE_DATA:
-			var data = Object.assign({}, state.data);
+			var dataItems = Object.assign({}, state.dataItems);
 
-			for (var key in data) {
+			for (var key in dataItems) {
 				if (action.payload.ids.indexOf(key) > -1) {
-					dataItem(data[key], { type: INVALIDATE_DATA_ITEM })
+					dataItem(dataItems[key], { type: INVALIDATE_DATA_ITEM })
 				}
 			}
 
 			return Object.assign({}, state, {
 				// Unique concat
 				invalidData: [ ...new Set(state.invalidData.concat(action.payload.ids)) ],
-				data: data
+				dataItems: dataItems
 			})
 		case RECEIVE_DATA:
 			return Object.assign({}, state, {
@@ -243,7 +243,7 @@ function data(state = {
 				isFetching: state.isFetching.filter(v => v != action.payload.url),
 				// Subtract dataItemIds from invalidData array
 				invalidData: state.invalidData.filter(v => action.payload.dataItemIds.indexOf(v) == -1),
-				data: Object.assign({}, state.data, action.payload.data.map(v => dataItem(v, RECEIVE_DATA_ITEM))),
+				dataItems: Object.assign({}, state.dataItems, action.payload.data.map(v => dataItem(v, RECEIVE_DATA_ITEM))),
 				lastUpdated: action.payload.receivedAt
 			})
 		default:
