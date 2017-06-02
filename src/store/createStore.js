@@ -3,6 +3,7 @@ import thunk from 'redux-thunk'
 import { browserHistory } from 'react-router'
 import makeRootReducer from './reducers'
 import { updateLocation } from './location'
+import { fetchPages } from './page'
 
 export default (initialState = {}) => {
   // ======================================================
@@ -47,5 +48,12 @@ export default (initialState = {}) => {
     })
   }
 
-  return store
+  // Fill store with page data and data, TODO; place elsewhere?
+store.dispatch(fetchPages('api/pages')).then(() =>
+	console.log('pages fetched and received')
+)
+	// ??
+
+
+	return store
 }

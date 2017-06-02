@@ -1,5 +1,6 @@
 // import browserHistory from 'react-router/lib/browserHistory'
 import fetch from 'isomorphic-fetch'
+import { combineReducers } from 'redux'
 
 
 // ------------------------------------
@@ -126,7 +127,7 @@ export function getLoadedAndValidDataItemIds() {
 // ------------------------------------
 // Async Actions
 // ------------------------------------
-export function fetch (url = '') {
+export function fetchData(url = '') {
 	// Thunk middleware knows how to handle functions.
 	// It passes the dispatch method as an argument to the function,
 	// thus making it able to dispatch actions itself.

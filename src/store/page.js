@@ -1,12 +1,14 @@
 // import browserHistory from 'react-router/lib/browserHistory'
 import fetch from 'isomorphic-fetch'
+import { combineReducers } from 'redux'
+import _ from 'lodash'
 
 // TODO; merge functionality of data and page reducers into utility file
 
 // ------------------------------------
 // Constants
 // ------------------------------------
-export const BASE_URL = 'localhost/api/public'
+export const BASE_URL = 'http://localhost/api/public'
 
 // Async
 export const FETCH_PAGES = 'FETCH_PAGES'
@@ -105,11 +107,12 @@ export function receivePages(url, data) {
 		payload : {
 			url: url,
 			pages: data.pages,
-			pageIds: data.pages.map(page => page.id),
+			pageIds: _.map(data.pages, page => page.id),
 			receivedAt: Date.now()
 		}
 	}
 }
+// Hello
 
 export function selectPage(url) {
 	return {
@@ -126,7 +129,7 @@ export function getLoadedAndValidPageIds() {
 // ------------------------------------
 // Async Actions
 // ------------------------------------
-export function fetch (url = '') {
+export function fetchPages(url = '') {
 	// Thunk middleware knows how to handle functions.
 	// It passes the dispatch method as an argument to the function,
 	// thus making it able to dispatch actions itself.
@@ -136,6 +139,7 @@ export function fetch (url = '') {
 		// First dispatch: the app state is updated to inform
 		// that the API call is starting.
 
+		console.log('about to dispatch get pages')
 		dispatch(getPages(url))
 
 		// The function called by the thunk middleware can return a value,
@@ -209,7 +213,8 @@ function pages(state = {
 }, action) {
 	switch (action.type) {
 		case GET_PAGES:
-			var data = Object.assign({}, state.data);
+			console.log('test, code reaches')
+			var data = Object.assign({}, state.data)
 
 			// TODO; This cannot associate page urls with page set urls,
 			// TODO; load url sets from server; eg common page url with related specific page urls
@@ -218,10 +223,9 @@ function pages(state = {
 					page(data[key], { type: GET_PAGE })
 				}
 			}
-
 			return Object.assign({}, state, {
 				// Unique push
-				isFetching: [ ...new Set(state.isFetching.push(action.url)) ],
+				isFetching: [ ...new Set(state.isFetching.concat(action.url)) ],
 				data: data
 			})
 		case INVALIDATE_PAGES:
@@ -245,7 +249,7 @@ function pages(state = {
 				isFetching: state.isFetching.filter(v => v != action.payload.url),
 				// Subtract pageIds from invalidPages array
 				invalidPages: state.invalidPages.filter(v => action.payload.pageIds.indexOf(v) == -1),
-				data: Object.assign({}, state.data, action.payload.pages.map(v => page(v, RECEIVE_PAGE))),
+				data: Object.assign({}, state.data, _.mapValues(action.payload.pages, v => page(v, RECEIVE_PAGE))),
 				// lastUpdated: action.payload.receivedAt
 			})
 		default:
@@ -266,11 +270,10 @@ function pages(state = {
 // 			return state
 // 	}
 // }
-function fetchPages(state = {}, action) {
+function fetchPagesReducer(state = {}, action) {
 	switch (action.type) {
-		case GET_ALL_PAGES:
-		case GET_COMMON_PAGES:
-		case INVALIDATE_ALL_PAGES:
+		case GET_PAGES:
+		case INVALIDATE_PAGES:
 		case RECEIVE_PAGES:
 			return Object.assign({}, state, {
 				pages: pages(state.pages, action)
@@ -279,7 +282,7 @@ function fetchPages(state = {}, action) {
 			return state
 	}
 }
-function selectedPage(state = '', action) {
+function selectedPageReducer(state = '', action) {
 	switch (action.type) {
 		case SELECT_PAGE:
 			return action.url
@@ -292,8 +295,8 @@ function selectedPage(state = '', action) {
 
 
 const rootReducer = combineReducers({
-	fetchPages,
-	selectedPage
+	fetchPagesReducer,
+	selectedPageReducer
 })
 
 export default rootReducer
